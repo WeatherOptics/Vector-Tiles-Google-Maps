@@ -1,8 +1,8 @@
 /*
  *  Created by Jes�s Barrio on 04/2021
  */
-import {MVTFeature} from './MVTFeature.js';
-import {inCircle, getDistanceFromLine} from '../lib/mercator.js';
+import { MVTFeature } from './MVTFeature.js';
+import { inCircle, getDistanceFromLine } from '../lib/mercator.js';
 
 /**
  * @typedef {import('@mapbox/vector-tile').VectorTileLayer} VectorTileLayer
@@ -61,7 +61,7 @@ class MVTLayer {
    * @param {TileContext} tileContext
    */
   parseVectorTileFeatures(mVTSource, vectorTileLayer, tileContext) {
-    this._canvasAndMVTFeatures[tileContext.id] = {canvas: tileContext.canvas, features: []};
+    this._canvasAndMVTFeatures[tileContext.id] = { canvas: tileContext.canvas, features: [] };
     for (let i = 0; i < vectorTileLayer.length; i++) {
       this._parseVectorTileFeature(mVTSource, vectorTileLayer.feature(i), tileContext, i);
     }
@@ -110,8 +110,18 @@ class MVTLayer {
   drawTile(tileContext) {
     const mVTFeatures = this._canvasAndMVTFeatures[tileContext.id].features;
     if (!mVTFeatures) return;
-    mVTFeatures.filter((mVTFeature) => !mVTFeature.selected).forEach((mVTFeature) => mVTFeature.draw(tileContext));
-    mVTFeatures.filter((mVTFeature) => mVTFeature.selected).forEach((mVTFeature) => mVTFeature.draw(tileContext));
+    const shouldRenderFeature = tileContext.shouldRenderFeature;
+    let unselectedFeatures = mVTFeatures.filter((mVTFeature) => !mVTFeature.selected && shouldRenderFeature?.(mVTFeature) !== false);
+    if (tileContext.sortKey) {
+      unselectedFeatures = unselectedFeatures.sort((a, b) => a[tileContext.sortKey] - b[tileContext.sortKey]);
+    }
+    unselectedFeatures.forEach((mVTFeature) => mVTFeature.draw(tileContext));
+
+    let selectedFeatures = mVTFeatures.filter((mVTFeature) => mVTFeature.selected && shouldRenderFeature?.(mVTFeature) !== false);
+    if (tileContext.sortKey) {
+      selectedFeatures = selectedFeatures.sort((a, b) => a[tileContext.sortKey] - b[tileContext.sortKey]);
+    }
+    selectedFeatures.forEach((mVTFeature) => mVTFeature.draw(tileContext));
   }
 
   /**
@@ -245,4 +255,4 @@ class MVTLayer {
   }
 }
 
-export {MVTLayer};
+export { MVTLayer };

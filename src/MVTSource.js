@@ -6,10 +6,10 @@
 /// <reference types="google.maps" />
 
 import Pbf from 'pbf';
-import {VectorTile} from '@mapbox/vector-tile';
-import {getTileAtLatLng, fromLatLngToTilePoint} from '../lib/mercator.js';
-import {MVTLayer} from './MVTLayer.js';
-import {getTileFromString, getTileString} from '../lib/geometry.js';
+import { VectorTile } from '@mapbox/vector-tile';
+import { getTileAtLatLng, fromLatLngToTilePoint } from '../lib/mercator.js';
+import { MVTLayer } from './MVTLayer.js';
+import { getTileFromString, getTileString } from '../lib/geometry.js';
 
 /**
  * @typedef {import('@mapbox/vector-tile').VectorTileLayer} VectorTileLayer
@@ -98,7 +98,7 @@ import {getTileFromString, getTileString} from '../lib/geometry.js';
  * @return {ClickHandlerOptions}
  * @private
  */
-const getMouseOptions = (options={}) => {
+const getMouseOptions = (options = {}) => {
   return {
     setSelected: options.setSelected || false,
     toggleSelection: (options.toggleSelection === undefined || options.toggleSelection),
@@ -114,7 +114,7 @@ const getMouseOptions = (options={}) => {
  * @return {StyleOptions}
  * @private
  */
-const defaultStyleFn = function(feature) {
+const defaultStyleFn = function (feature) {
   return {
     1: { // Point
       fillStyle: 'rgba(49,79,79,1)',
@@ -150,7 +150,7 @@ const defaultStyleFn = function(feature) {
  * @return {string|number}
  * @private
  */
-const defaultFeatureIdFn = function(feature) {
+const defaultFeatureIdFn = function (feature) {
   return feature?.properties?.id || feature?.properties?.Id || feature?.properties?.ID;
 };
 
@@ -240,6 +240,9 @@ class MVTSource {
     /** @type {Record<string, MVTLayer>} Keep a list of the layers contained in the PBFs */
     this.mVTLayers = {};
 
+    this.sortKey = options.sortKey;
+    this.shouldRenderFeature = options.shouldRenderFeature || function (feature) { return true; };
+
     // Init
     if (options.selectedFeatures) {
       this.setSelectedFeatures(options.selectedFeatures);
@@ -273,7 +276,7 @@ class MVTSource {
    * the document. Optional.
    * @param {Element} tile
    */
-  releaseTile(tile) {}
+  releaseTile(tile) { }
 
   /**
    * @param {google.maps.Point} coord
@@ -294,6 +297,8 @@ class MVTSource {
       zoom,
       tileSize: this._tileSize,
       parentId,
+      sortKey: this.sortKey,
+      shouldRenderFeature: this.shouldRenderFeature,
     };
     this._fetchTile(tileContext);
     return tileContext;
@@ -470,7 +475,7 @@ class MVTSource {
    * @param {(event: TileMapMouseEvent)} [callbackFunction=()=>{}]
    * @param {ClickHandlerOptions} options
    */
-  _mouseEventContinue(event, callbackFunction = ()=>{}, options) {
+  _mouseEventContinue(event, callbackFunction = () => { }, options) {
     const tile = getTileAtLatLng(event.latLng, this.map.getZoom());
     const tileId = getTileString(tile.z, tile.x, tile.y);
     const tileContext = this._visibleTiles[tileId];
