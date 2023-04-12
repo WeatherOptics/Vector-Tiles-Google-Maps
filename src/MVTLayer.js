@@ -205,9 +205,9 @@ class MVTLayer {
    */
   _handleClickFeature(event, mVTFeature) {
     return ({
-      3: this._handleClickFeaturePolygon,
-      2: this._handleClickFeatureLineString,
-      1: this._handleClickFeaturePoint,
+      3: this._handleClickFeaturePolygon.bind(this),
+      2: this._handleClickFeatureLineString.bind(this),
+      1: this._handleClickFeaturePoint.bind(this),
     })[mVTFeature.type]?.(event, mVTFeature);
   }
 
